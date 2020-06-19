@@ -3,20 +3,21 @@ import logo from './logo.svg';
 import './App.css';
 
 class EmailSearch extends React.Component {
+
   render() {
+    console.log(this.props)
     return (
+
       <div className="Search">
-        <form onSubmit={() => this.props.handleSearch()}>
           <label>
             Find an email by subject:
             <input
-              type="text"
-              name="name"
-              onChange={this.props.handleChange}
+              type="input"
+              name="searchbar"
+              onChange={this.props.onChange}
             />
           </label>
-          <input type="submit" value="Search" />
-        </form>
+          <button type="button" onClick={() => this.props.onClick()} >Search</button>
       </div>
     );
   }
@@ -77,36 +78,46 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      emailsFromServer: {},
+      emailsFromServer: [],
       fetchingAllEmails: false,
       currentEmail: {},
-      searchedEmails: {},
-      currentSearch: [],
+      searchedEmails: [],
+      currentSearch: '',
       viewingCurrentEmail: false,
       searchClicked: false,
     }
   }
 
-  handleChange(event) {
+  onChange(event) {
     this.setState({
-      currentSearch: event.target.value //adds it as an array to iterate through //might have to make sure this doesn't throw an error if one word is in the search
+      currentSearch: event.target.value,
     });
     console.log('currentSearch: ', this.state.currentSearch)
   }
 
   handleSearch(event) {
     console.log('Searched')
+    let searchArr = this.state.currentSearch.split(' ');
     //return a list of emails that have words that are being searched for in their subject
     const searchResult = this.state.emailsFromServer.filter(email => {
       //search the subjects for each word typed in the search
-      //if a match is made then return this email
-      email.subject()
+      for (let i = 0; i < searchArr.length; i++) {
+        let word = searchArr[i]
+        console.log(word)
+        let regex = RegExp(word)
+        console.log(regex)
+        if (regex.test(email.subject)) {
+          //add the email to the searchedEmails object
+          this.state.searchedEmails.push(email)
+        }
+      }
     })
-    // this.setState({
-    //   searchedEmails: searchResult,
-    //   searchClicked: true,
-    //   viewingCurrentEmail: false,
-    // })
+    this.setState({
+      searchedEmails: searchResult,
+      searchClicked: true,
+      viewingCurrentEmail: false,
+    })
+    console.log('Searched:', this.state.searchedEmails);
     
   }
 
@@ -144,13 +155,16 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
-          <EmailSearch />
+          <EmailSearch onClick={() => this.handleSearch()} onChange={() => this.onChange()} />
         </header>
         <main className="main">
           {this.state.viewingCurrentEmail ?
             <Email email={this.state.currentEmail} onClick={() => this.backToMailboxClick()} /> :
               this.state.searchClicked ?
-                <p>Search clicked</p> :
+              <Mailbox
+                emails={this.state.searchedEmails}
+                onClick={(id) => this.handleClick(id)}
+              /> :
                 this.state.fetchingAllEmails ?
                   <Mailbox
                     emails={this.state.emailsFromServer}
