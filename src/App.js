@@ -153,7 +153,8 @@ class App extends React.Component {
   backToMailboxClick() {
     this.setState({
       currentEmail: {},
-      viewingCurrentEmail: false
+      viewingCurrentEmail: false,
+      searchClicked: false,
     })
     console.log(this.state.currentEmail)
   }
@@ -174,7 +175,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
-          <EmailSearch onClick={(value) => this.handleSearch()} handleChange={() => this.handleChange()} />
+          <EmailSearch onClick={(value) => this.handleSearch()} handleChange={(search) => this.handleChange(search)} />
         </header>
         <main className="main">
           {this.state.viewingCurrentEmail ?
