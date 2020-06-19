@@ -2,6 +2,25 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+class EmailSearch extends React.Component {
+  render() {
+    return (
+      <div className="Search">
+        <form onSubmit={this.props.handleSearch}>
+          <label>
+            Find an email by subject:
+            <input
+              type="text"
+              name="name"
+              onChange={this.props.handleChange}
+            />
+          </label>
+          <input type="submit" value="Search" />
+        </form>
+      </div>
+    );
+  }
+}
 class Email extends React.Component {
   render() {
     console.log('currentEmail from Email component:', this.props.email)
@@ -42,7 +61,7 @@ class Mailbox extends React.Component {
   render() {
     return (
       <div className="mailbox">
-      {this.props.state.emailsFromServer.map((email, index) => {
+      {this.props.emails.map((email, index) => {
         return ( 
           <ul key={email.id}>
             <EmailSummary key={email.id} sender={email.sender} subject={email.subject} id={email.id} index={email.index} onClick={() => this.props.onClick(index)}/> 
@@ -61,15 +80,41 @@ class App extends React.Component {
       emailsFromServer: {},
       fetchingAllEmails: false,
       currentEmail: {},
+      searchedEmails: {},
+      currentSearch: [],
       viewingCurrentEmail: false,
+      searchClicked: false,
     }
+  }
+
+  handleChange(event) {
+    this.setState({
+      currentSearch: event.target.value.split(' ') //adds it as an array to iterate through //might have to make sure this doesn't throw an error if one word is in the search
+    });
+    console.log(this.state.currentSearch)
+  }
+
+  handleSearch(event) {
+    //return a list of emails that have words that are being searched for in their subject
+    const searchResult = this.state.emailsFromServer.filter(email => {
+      //search the subjects for each word typed in the search
+      //if a match is made then return this email
+      email.subject()
+    })
+    this.setState({
+      searchedEmails: searchResult,
+      searchClicked: true,
+      viewingCurrentEmail: false,
+    })
+    
   }
 
   handleClick(id) {
     console.log(this.state.emailsFromServer[id])
     this.setState({
       currentEmail: this.state.emailsFromServer[id],
-      viewingCurrentEmail: true
+      viewingCurrentEmail: true,
+      searchClicked: false,
     })
     console.log(this.state.currentEmail)
   }
@@ -95,25 +140,39 @@ class App extends React.Component {
   }
 
   render() {
-    if (this.state.viewingCurrentEmail === true) {
+    if (this.state.viewingCurrentEmail) {
       return (
         <div className="App">
           <header className="App-header">
+            <EmailSearch />
           </header>
           <main className="main">
             <Email email={this.state.currentEmail} onClick={() => this.backToMailboxClick()}/>
           </main>
         </div>
       )
+    } else if (this.state.searchClicked) {
+      return (
+        <div className="App">
+          <header className="App-header">
+            <EmailSearch />
+          </header>
+          <main className="main">
+            <Email email={this.state.currentEmail} onClick={() => this.backToMailboxClick()} />
+          </main>
+        </div>
+      )
+
     } else {
       return (
         <div className="App">
           <header className="App-header">
+            <EmailSearch />
           </header>
           <main className="main">
             {this.state.fetchingAllEmails ?
               <Mailbox 
-                state={this.state} 
+                emails={this.state.emailsFromServer} 
                 onClick={(id) => this.handleClick(id)} 
               /> :
               //this.spinner()
