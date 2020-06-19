@@ -6,7 +6,7 @@ class EmailSearch extends React.Component {
   render() {
     return (
       <div className="Search">
-        <form onSubmit={this.props.handleSearch}>
+        <form onSubmit={() => this.props.handleSearch()}>
           <label>
             Find an email by subject:
             <input
@@ -64,7 +64,7 @@ class Mailbox extends React.Component {
       {this.props.emails.map((email, index) => {
         return ( 
           <ul key={email.id}>
-            <EmailSummary key={email.id} sender={email.sender} subject={email.subject} id={email.id} index={email.index} onClick={() => this.props.onClick(index)}/> 
+            <EmailSummary sender={email.sender} subject={email.subject} id={email.id} index={email.index} onClick={() => this.props.onClick(index)}/> 
           </ul>
           )
       })}
@@ -89,23 +89,24 @@ class App extends React.Component {
 
   handleChange(event) {
     this.setState({
-      currentSearch: event.target.value.split(' ') //adds it as an array to iterate through //might have to make sure this doesn't throw an error if one word is in the search
+      currentSearch: event.target.value //adds it as an array to iterate through //might have to make sure this doesn't throw an error if one word is in the search
     });
-    console.log(this.state.currentSearch)
+    console.log('currentSearch: ', this.state.currentSearch)
   }
 
   handleSearch(event) {
+    console.log('Searched')
     //return a list of emails that have words that are being searched for in their subject
     const searchResult = this.state.emailsFromServer.filter(email => {
       //search the subjects for each word typed in the search
       //if a match is made then return this email
       email.subject()
     })
-    this.setState({
-      searchedEmails: searchResult,
-      searchClicked: true,
-      viewingCurrentEmail: false,
-    })
+    // this.setState({
+    //   searchedEmails: searchResult,
+    //   searchClicked: true,
+    //   viewingCurrentEmail: false,
+    // })
     
   }
 
@@ -140,48 +141,28 @@ class App extends React.Component {
   }
 
   render() {
-    if (this.state.viewingCurrentEmail) {
-      return (
-        <div className="App">
-          <header className="App-header">
-            <EmailSearch />
-          </header>
-          <main className="main">
-            <Email email={this.state.currentEmail} onClick={() => this.backToMailboxClick()}/>
-          </main>
-        </div>
-      )
-    } else if (this.state.searchClicked) {
-      return (
-        <div className="App">
-          <header className="App-header">
-            <EmailSearch />
-          </header>
-          <main className="main">
-            <Email email={this.state.currentEmail} onClick={() => this.backToMailboxClick()} />
-          </main>
-        </div>
-      )
-
-    } else {
-      return (
-        <div className="App">
-          <header className="App-header">
-            <EmailSearch />
-          </header>
-          <main className="main">
-            {this.state.fetchingAllEmails ?
-              <Mailbox 
-                emails={this.state.emailsFromServer} 
-                onClick={(id) => this.handleClick(id)} 
-              /> :
-              //this.spinner()
-              <img src={logo} className="App-logo" alt="logo" /> 
-            }
-          </main>
-        </div>
-      );
-    }
+    return (
+      <div className="App">
+        <header className="App-header">
+          <EmailSearch />
+        </header>
+        <main className="main">
+          {this.state.viewingCurrentEmail ?
+            <Email email={this.state.currentEmail} onClick={() => this.backToMailboxClick()} /> :
+              this.state.searchClicked ?
+                <p>Search clicked</p> :
+                this.state.fetchingAllEmails ?
+                  <Mailbox
+                    emails={this.state.emailsFromServer}
+                    onClick={(id) => this.handleClick(id)}
+                  /> :
+                  //this.spinner()
+                  <img src={logo} className="App-logo" alt="logo" />
+            
+          }
+        </main>
+      </div>
+    )
   }
 }
 
