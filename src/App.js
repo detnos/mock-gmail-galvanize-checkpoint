@@ -3,9 +3,24 @@ import logo from './logo.svg';
 import './App.css';
 
 class EmailSearch extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      value: '',
+    }
+
+  this.handleChangeLocal = this.handleChangeLocal.bind(this);
+  }
+
+  handleChangeLocal = (event) => {
+    let search = event.target.value;
+    console.log('search from EmailSearch: ', search)
+    //search does not go up to the app component, I don't know why
+    this.props.handleChange(search);
+  }
 
   render() {
-    console.log(this.props)
+    console.log(this.state.value)
     return (
 
       <div className="Search">
@@ -14,10 +29,10 @@ class EmailSearch extends React.Component {
             <input
               type="input"
               name="searchbar"
-              onChange={this.props.onChange}
+              onChange={this.handleChangeLocal}
             />
           </label>
-          <button type="button" onClick={() => this.props.onClick()} >Search</button>
+          <button type="button" onClick={() => this.props.onClick(this.statevalue)} >Search</button>
       </div>
     );
   }
@@ -86,17 +101,21 @@ class App extends React.Component {
       viewingCurrentEmail: false,
       searchClicked: false,
     }
+
+    this.handleChange = this.handleChange.bind(this);
   }
 
-  onChange(event) {
+  handleChange = (search) => {
+    console.log('search from app: ', search)
     this.setState({
-      currentSearch: event.target.value,
+      currentSearch: search,
     });
     console.log('currentSearch: ', this.state.currentSearch)
   }
 
-  handleSearch(event) {
+  handleSearch(value) {
     console.log('Searched')
+    console.log('valur: ', value)
     let searchArr = this.state.currentSearch.split(' ');
     //return a list of emails that have words that are being searched for in their subject
     const searchResult = this.state.emailsFromServer.filter(email => {
@@ -155,7 +174,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
-          <EmailSearch onClick={() => this.handleSearch()} onChange={() => this.onChange()} />
+          <EmailSearch onClick={(value) => this.handleSearch()} handleChange={() => this.handleChange()} />
         </header>
         <main className="main">
           {this.state.viewingCurrentEmail ?
